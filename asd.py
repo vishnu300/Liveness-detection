@@ -2,14 +2,14 @@ import cv2
 import time
 import math
 import cvzone
+from ultralytics import YOLO
 
-# Ensure `model`, `cap`, and `classNames` are initialized properly
+# Initialize video capture
 cap = cv2.VideoCapture(0)  # Use 0 for webcam or provide video file path
 confidence = 0.5  # Confidence threshold
-classNames = ["fake", "real"]  # Example class names (modify as needed)
+classNames = ["fake", "real"]  # Class names
 
-# Placeholder for YOLO model initialization
-from ultralytics import YOLO
+# Load YOLO model
 model = YOLO(r"C:\Users\DELL\VISHNU_AM\Projects\ML-PY-models\Liveness-detection\models\l_version_1_300.pt")  # Replace with your trained YOLO model
 
 prev_frame_time = 0
@@ -37,24 +37,26 @@ while True:
 
             # Class Name
             cls = int(box.cls[0])
-            if conf > confidence:
-                if classNames[cls] == 'real':
-                    color = (0, 255, 0)
-                else:
-                    color = (0, 0, 255)
+
+            # Display only "fake" objects
+            if conf > confidence and classNames[cls] == 'fake':
+                color = (0, 0, 255)  # Red for "fake"
 
                 # Draw rectangle and put text
                 cvzone.cornerRect(img, (x1, y1, w, h), colorC=color, colorR=color)
                 cvzone.putTextRect(
-                    img, f'{classNames[cls].upper()} {int(conf * 100)}%',
-                    (max(0, x1), max(35, y1)), scale=2, thickness=4,
+                    img, f'{classNames[cls].lower()} {int(conf * 100)}%',
+                    (max(0, x1), max(35, y1)), scale=0.5, thickness=1,
                     colorR=color, colorB=color
                 )
 
-    # Calculate and print FPS
+    # Calculate and display FPS
     fps = 1 / (new_frame_time - prev_frame_time + 1e-6)
     prev_frame_time = new_frame_time
-    print(f"FPS: {fps:.2f}")
+    cv2.putText(
+        img, f'FPS: {int(fps)}',
+        (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2
+    )
 
     # Display the image
     cv2.imshow("Image", img)

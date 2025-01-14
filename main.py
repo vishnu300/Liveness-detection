@@ -1,4 +1,3 @@
-# pip install ultralytics
 import math
 import time
 
